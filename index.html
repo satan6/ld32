@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Game title</title>
+		<link rel="stylesheet" href="style/style.css">
+		<link rel="stylesheet" href="style/icons/style.css">
+	</head>
+	<body>
+		<div id="topbar">
+			<i id="volume" class="icon-volume-high"></i>
+			<input id="volume-control" type="range" value="100" min="0" max="100"></input>
+			<i id="fs" class="icon-enlarge2 right"></i>
+		</div>
+
+		<script src="vendor/phaser-2.3.0-fixed.js"></script>
+		<script src="lib/vec2.js"></script>
+		<script src="lib/Rad.js"></script>
+		<script src="lib/FSM.js"></script>
+		<script src="lib/KeyboardDisplay.js"></script>
+		<script src="lib/GamepadDisplay.js"></script>
+		<script src="lib/VolumeControl.js"></script>
+		<script src="lib/ScreenShake.js"></script>
+		<script src="lib/Audio.js"></script>
+		<script src="lib/Story.js"></script>
+		<script src="lib/Credits.js"></script>
+		<script src="lib/JukeBox.js"></script>
+
+		<script>
+			WebFontConfig = {
+				active: function() {
+					WebFontConfig.isLoaded = true;
+				},
+				google: {
+					families: ['Roboto:400,100,300,700:latin']
+				}
+			};
+		</script>
+		<script src="//ajax.googleapis.com/ajax/libs/webfont/1/webfont.js" async="true"></script>
+
+		<script src="setup.js"></script>
+		<script src="entities/Player.js"></script>
+		<script src="entities/Tree.js"></script>
+		<script src="entities/Zombie.js"></script>
+		<script src="entities/Timer.js"></script>
+		<script src="states/TitleScreen.js"></script>
+		<script src="states/CreditsScreen.js"></script>
+		<script src="states/LoadingScreen.js"></script>
+		<script src="states/GameState.js"></script>
+		<script src="states/GameOverScreen.js"></script>
+		<script src="main.js"></script>
+	</body>
+</html>
