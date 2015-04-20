@@ -94,6 +94,7 @@ var Player = (function() {
 							sprite.ent.kill(); // it fucks shit up when we destroy things
 							fuckEverything = true;
 							didHit = true;
+							this.axe.frame = 1;
 						}
 					}, this);
 				}

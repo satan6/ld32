@@ -21,7 +21,7 @@ var Tree = (function() {
 		this.splinters.setXSpeed(-100, -250);
 		this.splinters.setYSpeed(-200, 200);
 
-    	this.splinters.makeParticles('splinter');
+		this.splinters.makeParticles('splinter');
 
 		this.treeShape = game.physics.p2.createBody(x, y, 0, false, {}, [0,13-32, 0,64-13-32, 190,64-16-32, 190,70+64-32, 670,30-32, 190,-70-32, 190,16-32]);
 		this.treeShape.killsYou = true;
@@ -144,13 +144,13 @@ Tree.prototype.fall = function(dir) {
 	}, 4000, Phaser.Easing.Quadratic.In, true);
 
 	var timer = game.time.create();
-	timer.add(3100, function() {
+	timer.add(3300, function() {
 		game.physics.p2.addBody(this.treeShape);
 		//this.treeShape.debug = true;
 		this.treeShape.data.updateAABB(); // Please just kill me
 
 		game.plugins.screenShake.shake({
-			duration: 800,
+			duration: 1100,
 			intensity: {
 				x: 40,
 				y: 60

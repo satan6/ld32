@@ -25,7 +25,7 @@ var Zombie = (function() {
 			} else if(body.killsYou) {
 				console.log("zombie deaded");
 				var d = vec2.from(this.sprite.position).dist(body.tree.sprite.position);
-				this.kill(d/640 * 1000);
+				this.kill(d/640 * 600);
 			} else if(!body.isZombie)
 				this.didCollide = true;
 		}, this);
@@ -119,7 +119,17 @@ var Zombie = (function() {
 		this.die.play();
 
 		this.sprite.destroy();
+		var splatter = game.add.sprite(this.sprite.position.x, this.sprite.position.y, "splatter", 0, corpses);
+		splatter.anchor.setTo(0.5, 1);
+		splatter.rotation = this.sprite.rotation + Math.PI;
+		splatter.alpha = 0;
+		game.add.tween(splatter).to({
+			alpha: 1
+		}, 300, Phaser.Easing.Quadratic.In, true);
+
 		var corpse = game.add.sprite(this.sprite.position.x, this.sprite.position.y, "zombie_dead", 0, corpses);
+		corpse.animations.add('die', [0, 1, 2, 3, 4, 5], 24);
+		corpse.animations.play('die');
 		corpse.anchor.setTo(0.5, 0.8);
 		corpse.rotation = this.sprite.rotation + Math.PI;
 		this.isAlive = false;

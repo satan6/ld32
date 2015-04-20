@@ -7,7 +7,7 @@ var Timer = (function() {
 		this.sprite = game.make.sprite(0, 0, "timer", 0, world);
 		this.sprite.anchor.set(0.5, 0.5);
 		this.sprite.scale.set(0.5, 0.5);
-		this.icon = game.add.sprite(WIDTH - 40, 40, "timer", 0);
+		this.icon = game.add.sprite(WIDTH - 40, 40, "timer_icon", 0);
 		this.icon.fixedToCamera = true;
 		this.icon.anchor.set(1, 0);
 		this.icon.visible = false;

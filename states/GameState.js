@@ -13,18 +13,21 @@ GameState.prototype.preload = function() {
     game.load.image('stem', 'assets/sprites/stem.png');
     game.load.image('stump', 'assets/sprites/stump.png');
     game.load.image('stemEnd', 'assets/sprites/stemEnd.png');
-    game.load.image('axe', 'assets/sprites/axe.png');
     game.load.image('playerPortrait', 'assets/sprites/playerPortrait.png');
+    game.load.image('playerPortrait_bloody', 'assets/sprites/playerPortrait_bloody.png');
     game.load.image('playerPortrait_sad', 'assets/sprites/playerPortrait_sad.png');
     game.load.image('zombiePortrait', 'assets/sprites/zombiePortrait.png');
     game.load.image('splinter', 'assets/sprites/splinter.png');
     game.load.image('blood', 'assets/sprites/blood.png');
+    game.load.image('timer_icon', 'assets/sprites/timer_icon.png');
+    game.load.image('splatter', 'assets/sprites/splatter.png');
     game.load.spritesheet('player', 'assets/sprites/player.png', 32, 32);
     game.load.spritesheet('zombie', 'assets/sprites/zombie.png', 32, 32);
-    game.load.spritesheet('zombie_dead', 'assets/sprites/zombie_dead.png');
+    game.load.spritesheet('zombie_dead', 'assets/sprites/zombie_corpse.png', 32, 64);
     game.load.spritesheet('timer', 'assets/sprites/timer.png', 32, 32);
     game.load.spritesheet('branches', 'assets/sprites/branches.png', 128, 256);
     game.load.spritesheet('fall_indicator', 'assets/sprites/indicator.png', 640, 64);
+    game.load.spritesheet('axe', 'assets/sprites/axe.png', 64, 16);
 
     game.load.audio('happyMusic', 'assets/audio/music/happy.ogg');
     game.load.audio('actionMusic', 'assets/audio/music/action.ogg');
@@ -99,15 +102,16 @@ GameState.prototype.create = function() {
     ], true);
 
     this.intro2 = new Story([
-        new Story.Speech("playerPortrait", "Jack",  "I sure love choppin' ma trees,\ni could do it all day long."),
+        new Story.Speech("playerPortrait", "Jack",  "I sure love choppin' ma trees.\nI could chop all day long."),
         new Story.Speech("playerPortrait", "Jack",  "But i need to mind the time!\nI should use my timer."),
-        new Story.Text("Throw the timer at your cursor with SPACE.\nThen chop trees till the time is out!"),
+        new Story.Text("Throw the timer to your cursor with SPACE.\nThen chop trees till it rings!"),
     ], true);
 
     this.intro3 = new Story([
         new Story.Speech("playerPortrait", "Jack",  "Oh no, zombies!\nThey must be drawn to the sound!"),
         new Story.Speech("zombiePortrait", "Zombie",  "Hnnnnraagagafgädgösdfgjλasfκgdöas!", true),
         new Story.Speech("playerPortrait", "Jack",  "Damn zombies, get out of my forest!"),
+        new Story.Text("Kill all zombies!"),
         new Story.Fn(function(next) {
             timer.timer.resume();
             next();
@@ -149,11 +153,11 @@ GameState.prototype.create = function() {
     }
 
 
-    game.time.advancedTiming = true;
+    /*game.time.advancedTiming = true;
     fpsText = game.add.text(
         20, 20, '', { font: '16px Arial', fill: '#ffffff' }
     );
-    fpsText.fixedToCamera = true;
+    fpsText.fixedToCamera = true;*/
 
     this.setupPause();
 };
@@ -174,9 +178,9 @@ GameState.prototype.spawnZombies = function() {
 };
 
 GameState.prototype.update = function() {
-    if(game.time.fps !== 0) {
+    /*if(game.time.fps !== 0) {
         fpsText.setText(game.time.fps + ' FPS');
-    }
+    }*/
 
     trees.forEach(function(tree) { // let trees fall during story
         tree.ent.update();
@@ -195,8 +199,8 @@ GameState.prototype.update = function() {
 
     if(isWin) { 
         this.story = new Story([
-            new Story.Speech("playerPortrait", "Jack",  "This is what you get, zombies!\nRekt!"),
-            new Story.Speech("playerPortrait", "Jack",  "Mhm...\nBut i'm still all by myself in the zombie apocalypse."),
+            new Story.Speech("playerPortrait_bloody", "Jack",  "This is what you get, zombies!\nRekt!"),
+            new Story.Speech("playerPortrait_bloody", "Jack",  "Mhm...\nBut i'm still all by myself in the zombie apocalypse."),
             new Story.Speech("playerPortrait_sad", "Jack",  "Oh no, i'm so sad and alone...\nI just want a companion!"),
             new Story.Fn(function(next) {
                 game.state.start("credits", true);

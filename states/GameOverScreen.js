@@ -17,11 +17,16 @@ var GameOverScreen = (function() {
         this.titleText.anchor.y = 1;
 
 
-        this.text0 = game.add.text(640, 400, "The zombies got ya.", {
+        this.text0 = game.add.text(640, 400, "You died a slow and horrible death.", {
             font: "30px Roboto",
             fill: "#ffffff"
         });
         this.text0.anchor.x = 0.5;
+        this.tip = game.add.text(640, 450, "Tip: You can pick up the timer again.", {
+            font: "30px Roboto",
+            fill: "#ffffff"
+        });
+        this.tip.anchor.x = 0.5;
 
         this.text1 = game.add.text(640, 600, 'Press SPACE to try again.', {
             font: "18px Roboto",
