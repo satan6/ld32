@@ -25,6 +25,7 @@ var LoadingScreen = (function() {
         timer.start();
 
         game.volumeControl.update();
+        //game.stage.disableVisibilityChange = true;
 
         Music = new JukeBox(game);
     };

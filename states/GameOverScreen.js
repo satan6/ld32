@@ -17,7 +17,7 @@ var GameOverScreen = (function() {
         this.titleText.anchor.y = 1;
 
 
-        this.text0 = game.add.text(640, 400, "IDK what to say.", {
+        this.text0 = game.add.text(640, 400, "The zombies got ya.", {
             font: "30px Roboto",
             fill: "#ffffff"
         });
@@ -30,6 +30,8 @@ var GameOverScreen = (function() {
         this.text1.anchor.x = 0.5;
 
         Music.fadeout('menuloop', 1000);
+
+        needsTutorial = false;
     };
 
     GameOverScreen.prototype.update = function() {

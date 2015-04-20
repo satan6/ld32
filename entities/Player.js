@@ -37,6 +37,8 @@ var Player = (function() {
 		this.swing = game.add.sound("axe_swing");
 		game.plugins.audio.adoptSound(this.swing, this.sprite.position, true);
 
+		this.chopSound = game.add.sound("chop");
+		game.plugins.audio.adoptSound(this.chopSound, this.sprite.position, true);
 	}
 
 	Player.prototype.update = function() {
@@ -83,6 +85,7 @@ var Player = (function() {
 				var axeCenter = vec2.from(this.sprite.position).plus(dir.norm().times(10));
 
 				var fuckEverything = true;
+				var didHit = false;
 
 				while(fuckEverything) {
 					fuckEverything = false;
@@ -90,9 +93,13 @@ var Player = (function() {
 						if(axeCenter.dist(sprite.position) < 70) {
 							sprite.ent.kill(); // it fucks shit up when we destroy things
 							fuckEverything = true;
+							didHit = true;
 						}
 					}, this);
 				}
+
+				if(didHit)
+					this.chopSound.play();
 			}
 
 			this.mouseWasDown = true;

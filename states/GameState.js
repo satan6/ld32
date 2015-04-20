@@ -1,8 +1,10 @@
-var isWin;
+var isWin, needsTutorial;
 
 var player, timer;
 
 var world, corpses, trees, zombies;
+
+var onTreeChopped, onTimerRing;
 
 function GameState() {}
 
@@ -15,11 +17,14 @@ GameState.prototype.preload = function() {
     game.load.image('playerPortrait', 'assets/sprites/playerPortrait.png');
     game.load.image('playerPortrait_sad', 'assets/sprites/playerPortrait_sad.png');
     game.load.image('zombiePortrait', 'assets/sprites/zombiePortrait.png');
+    game.load.image('splinter', 'assets/sprites/splinter.png');
+    game.load.image('blood', 'assets/sprites/blood.png');
     game.load.spritesheet('player', 'assets/sprites/player.png', 32, 32);
     game.load.spritesheet('zombie', 'assets/sprites/zombie.png', 32, 32);
     game.load.spritesheet('zombie_dead', 'assets/sprites/zombie_dead.png');
     game.load.spritesheet('timer', 'assets/sprites/timer.png', 32, 32);
     game.load.spritesheet('branches', 'assets/sprites/branches.png', 128, 256);
+    game.load.spritesheet('fall_indicator', 'assets/sprites/indicator.png', 640, 64);
 
     game.load.audio('happyMusic', 'assets/audio/music/happy.ogg');
     game.load.audio('actionMusic', 'assets/audio/music/action.ogg');
@@ -30,6 +35,9 @@ GameState.prototype.preload = function() {
     game.load.audio('tick_loop', 'assets/audio/tick_loop.wav');
     game.load.audio('axe_swing', 'assets/audio/swing_axe.wav');
     game.load.audio('pickup', 'assets/audio/pickup.wav');
+    game.load.audio('zombie_confused', 'assets/audio/zombie_confused.wav');
+    game.load.audio('zombie_attack', 'assets/audio/zombie_attack.wav');
+    game.load.audio('zombie_die', 'assets/audio/zombie_die.wav');
 
     /*game.load.script('blurx', 'filters/BlurX.js');
     game.load.script('game', 'filters/Game.js');
@@ -62,10 +70,10 @@ GameState.prototype.create = function() {
     zombies = game.add.group();
     trees = game.add.group();
 
-    player = new Player(500, 100);
+    player = new Player(1280, 720);
     timer = new Timer();
 
-    game.camera.follow(player.sprite, Phaser.Camera.FOLLOW_PLATFORMER);
+    game.camera.follow(player.sprite, Phaser.Camera.FOLLOW_TOPDOWN_TIGHT);
 
     for(var i = 0; i < 30; i++) {
         var needNew = true;
@@ -77,11 +85,80 @@ GameState.prototype.create = function() {
                 if(pos.dist(sprite.position) < 150)
                     needNew = true;
             });
+
+            if(pos.dist(player.sprite.position) < 100)
+                needNew = true;
         }
 
         new Tree(pos.x, pos.y);
     }
 
+    this.intro1 = new Story([
+        new Story.Speech("playerPortrait", "Jack",  "What a beautiful day to chop some trees!"),
+        new Story.Text("Move around with WASD,\nthen chop 'em with your mouse!"),
+    ], true);
+
+    this.intro2 = new Story([
+        new Story.Speech("playerPortrait", "Jack",  "I sure love choppin' ma trees,\ni could do it all day long."),
+        new Story.Speech("playerPortrait", "Jack",  "But i need to mind the time!\nI should use my timer."),
+        new Story.Text("Throw the timer at your cursor with SPACE.\nThen chop trees till the time is out!"),
+    ], true);
+
+    this.intro3 = new Story([
+        new Story.Speech("playerPortrait", "Jack",  "Oh no, zombies!\nThey must be drawn to the sound!"),
+        new Story.Speech("zombiePortrait", "Zombie",  "Hnnnnraagagafgädgösdfgjλasfκgdöas!", true),
+        new Story.Speech("playerPortrait", "Jack",  "Damn zombies, get out of my forest!"),
+        new Story.Fn(function(next) {
+            timer.timer.resume();
+            next();
+        })
+    ], true);
+
+    this.story = null;
+
+    isWin = false;
+
+    //this.story.start();
+    
+    if(needsTutorial) {
+        this.story = this.intro1;
+        this.story.start();
+
+        onTreeChopped = function() {
+            this.story = this.intro2;
+            this.story.start();
+            timer.enable();
+            onTreeChopped = null;
+
+            onTimerRing = function() {
+                this.spawnZombies();
+                this.story = this.intro3;
+                this.story.start();
+                Music.fadeout("actionMusic", 1000);
+                timer.timer.pause();
+
+                onTimerRing = null;
+            }.bind(this);
+        }.bind(this);
+
+        Music.play("happyMusic");
+    } else {
+        this.spawnZombies();
+        timer.enable();
+        Music.fadeout("actionMusic", 1000);
+    }
+
+
+    game.time.advancedTiming = true;
+    fpsText = game.add.text(
+        20, 20, '', { font: '16px Arial', fill: '#ffffff' }
+    );
+    fpsText.fixedToCamera = true;
+
+    this.setupPause();
+};
+
+GameState.prototype.spawnZombies = function() {
     for(var i = 0; i < 70; i++) {
         var needNew = true;
         while(needNew) {
@@ -94,46 +171,6 @@ GameState.prototype.create = function() {
 
         new Zombie(pos.x, pos.y);
     }
-
-    //new Zombie(400, 400);
-    //new Zombie(500, 400);
-    //new Zombie(300, 500);
-    //new Zombie(500, 300);
-
-
-    this.intro = new Story([
-        new Story.Speech("playerPortrait", "Jack",  "What a beautiful day to chop some trees!"),
-        new Story.Text("Move around with WASD,\nthen chop 'em with your mouse!"),
-    ], true);
-
-    this.intro2 = new Story([
-        new Story.Speech("playerPortrait", "Jack",  "I sure love choppin' ma trees,\ni could do it all day long."),
-        new Story.Speech("playerPortrait", "Jack",  "But i need to mind the time!\nI should use my timer."),
-        new Story.Text("Place the timer at your cursor with SPACE.\nThen chop trees till the time is out!"),
-    ], true);
-
-    this.intro3 = new Story([
-        new Story.Speech("playerPortrait", "Jack",  "Oh no, zombies!\nThey must be drawn to the sound!"),
-        new Story.Speech("zombiePortrait", "Zombie",  "Hnnnnraagagafgädgösdfgjλasfκgdöas!", true),
-        new Story.Speech("playerPortrait", "Jack",  "Damn zombies, get out of my forest!"),
-    ], true);
-
-    this.story = null;
-
-    isWin = false;
-
-    //this.story.start();
-
-    Music.fadeout("actionMusic", 1000);
-
-
-    game.time.advancedTiming = true;
-    fpsText = game.add.text(
-        20, 20, '', { font: '16px Arial', fill: '#ffffff' }
-    );
-    fpsText.fixedToCamera = true;
-
-    this.setupPause();
 };
 
 GameState.prototype.update = function() {
@@ -145,13 +182,22 @@ GameState.prototype.update = function() {
         tree.ent.update();
     });
 
-    if(this.story && this.story.isActive) return this.story.update();
+    if(this.story && this.story.isActive) {
+        zombies.forEach(function(zombie) {
+            zombie.body.setZeroVelocity();
+            zombie.body.setZeroRotation();
+        });
+
+        player.sprite.body.setZeroVelocity();
+        player.sprite.body.setZeroRotation();
+        return this.story.update();
+    }
 
     if(isWin) { 
         this.story = new Story([
             new Story.Speech("playerPortrait", "Jack",  "This is what you get, zombies!\nRekt!"),
             new Story.Speech("playerPortrait", "Jack",  "Mhm...\nBut i'm still all by myself in the zombie apocalypse."),
-            new Story.Speech("playerPortrait_sad", "Jack",  "Oh no, i'm so sad and alone...\nIf only i had, like, a companion!"),
+            new Story.Speech("playerPortrait_sad", "Jack",  "Oh no, i'm so sad and alone...\nI just want a companion!"),
             new Story.Fn(function(next) {
                 game.state.start("credits", true);
                 next();

@@ -11,16 +11,46 @@ var Tree = (function() {
 		this.stump.body.setCircle(20);
 		this.stump.body.static = true;
 
+		this.splinters = game.add.emitter(0, 0, 30);
+		this.sprite.addChild(this.splinters);
+		this.splinters.gravity = 0;
+		//this.splinters.emitX = 15;
+		this.splinters.setAlpha(1, 0.3, 400);
+		this.splinters.setRotation(1, 2);
+		this.splinters.setScale(0.9, 0.2, 0.9, 0.2, 400);
+		this.splinters.setXSpeed(-100, -250);
+		this.splinters.setYSpeed(-200, 200);
+
+    	this.splinters.makeParticles('splinter');
+
 		this.treeShape = game.physics.p2.createBody(x, y, 0, false, {}, [0,13-32, 0,64-13-32, 190,64-16-32, 190,70+64-32, 670,30-32, 190,-70-32, 190,16-32]);
 		this.treeShape.killsYou = true;
+		this.treeShape.tree = this;
 
 		this.stemShape = game.physics.p2.createBody(x, y, 0, false, {}, [0,13-32, 0,64-13-32, 670,30-32]);
 		//this.stump.body.immovable = true;
 		
 		this.stump.inputEnabled = true;
 		this.stump.events.onInputDown.add(function() {
-			this.fall(Math.PI/2*3 - vec2.from(player.sprite.position).minus(this.sprite.position).angle());
-			this.chopSound.play();
+			if(vec2.from(player.sprite.position).dist(this.sprite.position) < 85) {
+				if(!this.didFall)
+					this.splinters.start(true, 400, null, 30);
+
+				player.chopSound.play();
+				this.fall(Math.PI/2*3 - vec2.from(player.sprite.position).minus(new vec2(game.input.activePointer.worldX, game.input.activePointer.worldY)).angle());
+			}
+		}, this);
+
+		this.stump.events.onInputOver.add(function() {
+			if(this.didFall) return;
+			this.indicator.visible = true;
+			this.drawIndicator = true;
+		}, this);
+
+		this.stump.events.onInputOut.add(function() {
+			if(this.didFall) return;
+			this.indicator.visible = false;
+			this.drawIndicator = false;
 		}, this);
 
 		this.fallingStuff = game.add.group(this.sprite);
@@ -30,10 +60,13 @@ var Tree = (function() {
 
 		this.lowerBranches = game.add.group(this.fallingStuff);
 
-		stem = this.stem = game.add.sprite(0, 0, 'stem', 0, this.fallingStuff);
+		this.stem = game.add.sprite(0, 0, 'stem', 0, this.fallingStuff);
 		this.stem.anchor.setTo(0, 0.5);
 		this.stem.scale.x = 0.01;
-		this.stump.body.immovable = true;
+
+		this.indicator = game.add.sprite(x, y, 'fall_indicator', 0);
+		this.indicator.anchor.setTo(0.05, 0.5);
+		this.indicator.visible = false;
 
 		this.upperBranches = game.add.group(this.fallingStuff);
 
@@ -42,9 +75,6 @@ var Tree = (function() {
 		}
 
 		this.sprite.ent = this;
-
-		this.chopSound = game.add.sound("chop");
-		game.plugins.audio.adoptSound(this.chopSound, this.sprite.position, true);
 
 		this.fallSound = game.add.sound("treefall");
 		game.plugins.audio.adoptSound(this.fallSound, this.sprite.position, true);
@@ -90,6 +120,8 @@ var Tree = (function() {
 Tree.prototype.fall = function(dir) {
 	if(this.didFall) return;
 	this.didFall = true;
+	this.drawIndicator = false;
+	this.indicator.visible = false;
 	this.sprite.fallTime = game.time.time;
 
 	this.sprite.rotation = dir;
@@ -112,7 +144,7 @@ Tree.prototype.fall = function(dir) {
 	}, 4000, Phaser.Easing.Quadratic.In, true);
 
 	var timer = game.time.create();
-	timer.add(3500, function() {
+	timer.add(3100, function() {
 		game.physics.p2.addBody(this.treeShape);
 		//this.treeShape.debug = true;
 		this.treeShape.data.updateAABB(); // Please just kill me
@@ -127,13 +159,16 @@ Tree.prototype.fall = function(dir) {
 			easing: true
 		});
 	}, this);
-	timer.add(4200, function() {
+	timer.add(4000, function() {
 		game.physics.p2.removeBody(this.treeShape);
 		//this.treeShape.debug = false;
 
 		game.physics.p2.addBody(this.stemShape);
 		this.stemShape.data.updateAABB();
 		//this.stemShape.debug = true;
+		
+		if(onTreeChopped)
+			onTreeChopped();
 	}, this);
 	timer.start();
 
@@ -151,6 +186,16 @@ Tree.prototype.fall = function(dir) {
 };
 
 Tree.prototype.update = function() {
+	if(this.drawIndicator) {
+		var angle = Math.PI/2*3 - vec2.from(player.sprite.position).minus(new vec2(game.input.activePointer.worldX, game.input.activePointer.worldY)).angle();
+		this.indicator.rotation = angle;
+
+		if(vec2.from(player.sprite.position).dist(this.sprite.position) < 85)
+			this.indicator.frame = 1;
+		else
+			this.indicator.frame = 0;
+	}
+
 	this.lowerBranches.forEach(function(branch) {
 		branch.position.x = this.stem.width * branch.branchOffset;
 	}, this);

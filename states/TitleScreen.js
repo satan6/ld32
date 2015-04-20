@@ -133,6 +133,8 @@ var TitleScreen = (function() {
         }, 1300, Phaser.Easing.Quadratic.Out, true);
 
         Music.play('menuloop');
+
+        needsTutorial = true;
     };
 
     TitleScreen.prototype.update = function() {};
